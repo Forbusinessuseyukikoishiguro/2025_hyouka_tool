@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐰 うさうさ メンター評価マネジメント（口頭・筆記・3信号）｜APIなし版</title>
+<style>
+  :root{
+    --deep:#2E5E4E; --mid:#6FAE8E; --pale:#DCEFE4; --paleBg:#F2F8F4;
+    --accent:#E8A33D; --ink:#2B3A33; --inkSoft:#5C6B63; --white:#FFFFFF;
+    --line:#CFE3D7; --deep2:#264D40;
+    --green:#2E8B57; --greenBg:#E3F3EA;
+    --yellow:#C98A1B; --yellowBg:#FBF1DC;
+    --red:#C0563B; --redBg:#FBE7E1;
+    --l1:#6FAE8E; --l3:#1F7A8C; --l5:#7A5CC0;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    background:var(--paleBg);color:var(--ink);line-height:1.65;}
+  header{background:var(--deep);color:#fff;padding:16px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  header .bun{font-size:1.5rem;}
+  header h1{font-size:1.1rem;margin:0;font-weight:700;}
+  header .ver{margin-left:6px;background:var(--accent);color:#1a1a1a;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:5px;}
+  header .sub{width:100%;font-size:.78rem;color:var(--pale);margin-top:4px;opacity:.9;}
+  .wrap{max-width:1180px;margin:0 auto;padding:16px 16px 70px;}
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 14px;}
+  .tab{background:#fff;border:1px solid var(--line);color:var(--inkSoft);padding:9px 15px;border-radius:8px 8px 0 0;cursor:pointer;font-size:.9rem;font-weight:600;}
+  .tab.active{background:var(--deep);color:#fff;border-color:var(--deep);}
+  .panel{display:none;background:#fff;border:1px solid var(--line);border-radius:0 10px 10px 10px;padding:20px;box-shadow:0 2px 8px rgba(46,94,78,.06);}
+  .panel.active{display:block;}
+  h2.sec{font-size:1.05rem;color:var(--deep);margin:0 0 4px;}
+  .howto{background:var(--pale);border-left:4px solid var(--mid);border-radius:6px;padding:10px 14px;margin:0 0 16px;font-size:.83rem;}
+  .howto b{color:var(--deep);}
+  label{display:block;font-size:.8rem;font-weight:700;color:var(--deep);margin:10px 0 4px;}
+  .hint{font-weight:400;color:var(--inkSoft);font-size:.76rem;}
+  input[type=text],input[type=number],textarea,select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-size:.88rem;font-family:inherit;color:var(--ink);background:#fff;}
+  textarea{resize:vertical;min-height:54px;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row>div{flex:1;min-width:140px;}
+  button.act{background:var(--deep);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer;}
+  button.act:hover{background:#264d40;}
+  button.ghost{background:#fff;color:var(--deep);border:1px solid var(--deep);}
+  button.ghost:hover{background:var(--pale);}
+  button.danger{background:#fff;color:var(--red);border:1px solid var(--red);}
+  button.danger:hover{background:var(--redBg);}
+  button.mini{padding:5px 10px;font-size:.78rem;border-radius:6px;}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+  table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:8px;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:middle;}
+  th{background:var(--deep);color:#fff;font-size:.8rem;font-weight:700;}
+  tr:nth-child(even) td{background:#fbfdfc;}
+  .sig{display:inline-block;width:16px;height:16px;border-radius:50%;vertical-align:middle;margin-right:6px;border:1px solid rgba(0,0,0,.15);}
+  .sig.green{background:var(--green);} .sig.yellow{background:var(--yellow);} .sig.red{background:var(--red);}
+  .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.74rem;font-weight:700;}
+  .badge.green{background:var(--greenBg);color:var(--green);} .badge.yellow{background:var(--yellowBg);color:var(--yellow);} .badge.red{background:var(--redBg);color:var(--red);}
+  .lvtag{display:inline-block;padding:2px 9px;border-radius:6px;font-size:.74rem;font-weight:700;color:#fff;}
+  .lv1{background:var(--l1);} .lv3{background:var(--l3);} .lv5{background:var(--l5);}
+  .memberbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;}
+  .mchip{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:.84rem;display:flex;align-items:center;gap:6px;}
+  .mchip.active{background:var(--deep);color:#fff;border-color:var(--deep);}
+  .mchip .x{color:var(--red);font-weight:700;cursor:pointer;margin-left:2px;}
+  .mchip.active .x{color:#ffd;}
+  .card{border:1px solid var(--line);border-radius:9px;padding:14px;margin-bottom:12px;background:#fcfefd;}
+  .card .chead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
+  .card .chead .qn{font-weight:700;color:var(--deep);}
+  .sigpick{display:inline-flex;gap:4px;}
+  .sigpick button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:.78rem;font-weight:700;}
+  .sigpick button.on.green{background:var(--green);color:#fff;border-color:var(--green);}
+  .sigpick button.on.yellow{background:var(--yellow);color:#fff;border-color:var(--yellow);}
+  .sigpick button.on.red{background:var(--red);color:#fff;border-color:var(--red);}
+  .req{font-size:.74rem;color:var(--red);font-weight:700;}
+  .chk{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;color:var(--inkSoft);font-weight:600;cursor:pointer;}
+  .scorebox{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;}
+  .scorecell{flex:1;min-width:150px;background:var(--pale);border-radius:9px;padding:14px;text-align:center;}
+  .scorecell .lab{font-size:.76rem;color:var(--inkSoft);font-weight:700;}
+  .scorecell .val{font-size:1.7rem;font-weight:800;color:var(--deep);}
+  .verdict{margin-top:14px;border-radius:10px;padding:16px;border:2px solid;}
+  .verdict.green{background:var(--greenBg);border-color:var(--green);}
+  .verdict.yellow{background:var(--yellowBg);border-color:var(--yellow);}
+  .verdict.red{background:var(--redBg);border-color:var(--red);}
+  .verdict .vt{font-size:1.15rem;font-weight:800;margin-bottom:4px;}
+  .verdict.green .vt{color:var(--green);} .verdict.yellow .vt{color:var(--yellow);} .verdict.red .vt{color:var(--red);}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--deep);color:#fff;padding:10px 20px;border-radius:8px;font-size:.86rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99;}
+  .toast.show{opacity:1;}
+  .foot{text-align:center;color:var(--inkSoft);font-size:.76rem;margin-top:28px;}
+  .foot .motto{font-style:italic;color:var(--mid);}
+  .empty{color:var(--inkSoft);font-size:.86rem;padding:18px;text-align:center;background:#fbfdfc;border:1px dashed var(--line);border-radius:8px;}
+  .out{width:100%;min-height:160px;background:#fbfdfc;font-family:Consolas,monospace;font-size:.82rem;}
+  .pill{display:inline-block;background:var(--pale);color:var(--deep);border-radius:20px;padding:2px 10px;font-size:.74rem;font-weight:700;margin:2px;}
+  .small{font-size:.78rem;color:var(--inkSoft);}
+  .thresh{display:flex;gap:10px;flex-wrap:wrap;}
+  .thresh>div{flex:1;min-width:130px;}
+</style>
+</head>
+<body>
+<header>
+  <span class="bun">🐰</span>
+  <h1>うさうさ メンター評価マネジメント<span class="ver">v1.0 / APIなし版</span></h1>
+  <div class="sub">口頭理解度チェック・筆記試験・スコア・レベル・3信号（青/黄/赤）／ メンバー人数自由・しきい値はメンターが設定 ・ <span id="ver_today"></span> ・ データは端末内のみ（外部送信なし）</div>
+</header>
+
+<div class="wrap">
+
+  <!-- メンバーバー -->
+  <div class="memberbar" id="memberbar"></div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="dash">📊 ダッシュボード</div>
+    <div class="tab" data-tab="oral">🗣 口頭理解度チェック</div>
+    <div class="tab" data-tab="written">✍ 筆記試験</div>
+    <div class="tab" data-tab="result">🚦 総合判定</div>
+    <div class="tab" data-tab="setting">⚙ メンター設定</div>
+    <div class="tab" data-tab="data">💾 データ</div>
+  </div>
+
+  <!-- ダッシュボード -->
+  <div class="panel active" id="p-dash">
+    <h2 class="sec">📊 ダッシュボード（全メンバーの信号）</h2>
+    <div class="howto"><b>使い方：</b> 全メンバーの総合信号を一覧します。<b>赤信号が上</b>に来るので、フォローが必要な人がすぐ分かります。メンバーは下のバーで追加・切替できます。</div>
+    <div class="btnrow" style="margin-top:0">
+      <input type="text" id="newMemberName" placeholder="新しいメンバー名" style="max-width:240px">
+      <button class="act" onclick="addMember()">＋ メンバー追加</button>
+      <button class="ghost" onclick="recalcAll()">再集計</button>
+    </div>
+    <div id="dashTable" style="margin-top:14px"></div>
+  </div>
+
+  <!-- 口頭 -->
+  <div class="panel" id="p-oral">
+    <h2 class="sec">🗣 口頭理解度チェック</h2>
+    <div class="howto"><b>使い方：</b> 設問ごとに <b>レベル(Lv.1/3/5)</b> と <b>信号</b> を記録します。
+    「<b>最低限（必須）</b>」にチェックした設問で<b>赤</b>を付けると、総合は自動的に赤信号になります（＝最低限が抜けている）。
+    事実（observ）と所感を分けてメモしましょう。</div>
+    <div class="btnrow" style="margin-top:0">
+      <button class="act" onclick="addOral()">＋ 設問を追加</button>
+      <button class="ghost" onclick="addOralPreset()">うさうさ標準セットを追加</button>
+    </div>
+    <div id="oralList" style="margin-top:14px"></div>
+  </div>
+
+  <!-- 筆記 -->
+  <div class="panel" id="p-written">
+    <h2 class="sec">✍ 筆記試験</h2>
+    <div class="howto"><b>使い方：</b> 設問ごとに<b>配点</b>と<b>得点</b>を入れると、合計と得点率（％）を自動計算します。
+    「最低限（必須）」設問で得点0なら、総合は赤信号になります。</div>
+    <div class="btnrow" style="margin-top:0">
+      <button class="act" onclick="addWritten()">＋ 設問を追加</button>
+      <button class="ghost" onclick="addWrittenPreset()">5問テンプレを追加</button>
+    </div>
+    <div id="writtenList" style="margin-top:14px"></div>
+    <div class="scorebox" id="writtenScore"></div>
+  </div>
+
+  <!-- 総合 -->
+  <div class="panel" id="p-result">
+    <h2 class="sec">🚦 総合判定</h2>
+    <div class="howto"><b>使い方：</b> 口頭と筆記のスコアを、メンター設定の重みで合算 → 総合スコア・レベル・信号を判定します。
+    必須項目落ちがあれば、スコアに関係なく<b>赤信号</b>になります。判定後はメモを添えて記録できます。</div>
+    <div class="btnrow" style="margin-top:0">
+      <button class="act" onclick="calcResult()">総合を判定する</button>
+    </div>
+    <div class="scorebox" id="resultScore"></div>
+    <div id="verdictBox"></div>
+    <label style="margin-top:14px">メンター所感（事実→所感の順で）</label>
+    <textarea id="mentorMemo" placeholder="事実：口頭Lv.5で詰まった／筆記は80%&#10;所感：基礎は固い。応用の場数を増やしたい"></textarea>
+    <div class="btnrow">
+      <button class="ghost" onclick="saveMemo()">所感を保存</button>
+      <button class="ghost" onclick="copyReport()">この人の評価をコピー</button>
+    </div>
+  </div>
+
+  <!-- 設定 -->
+  <div class="panel" id="p-setting">
+    <h2 class="sec">⚙ メンター設定（しきい値・重み）</h2>
+    <div class="howto"><b>使い方：</b> 信号やレベルの<b>境界をメンター自身が設定</b>できます。チーム・職位に合わせて調整してください。設定は全メンバー共通です。</div>
+
+    <label>信号のしきい値 <span class="hint">総合スコア（0–100）に対する境界</span></label>
+    <div class="thresh">
+      <div>
+        <label>🟢 青信号：これ以上 <span class="hint">（合格圏）</span></label>
+        <input type="number" id="th_green" min="0" max="100" value="75">
+      </div>
+      <div>
+        <label>🔴 赤信号：これ未満 <span class="hint">（スコア低すぎ＝要フォロー）</span></label>
+        <input type="number" id="th_red" min="0" max="100" value="50">
+      </div>
+      <div>
+        <label class="small">※ 赤しきい値以上〜青しきい値未満が 🟡 黄信号</label>
+      </div>
+    </div>
+
+    <label style="margin-top:16px">レベルのしきい値 <span class="hint">総合スコア → レベル表示</span></label>
+    <div class="thresh">
+      <div><label>Lv.5（応用）：これ以上</label><input type="number" id="th_lv5" min="0" max="100" value="80"></div>
+      <div><label>Lv.3（説明）：これ以上</label><input type="number" id="th_lv3" min="0" max="100" value="55"></div>
+      <div><label class="small">※ Lv.3未満は Lv.1（記憶）扱い</label></div>
+    </div>
+
+    <label style="margin-top:16px">口頭と筆記の重み <span class="hint">合計100になるよう自動補正</span></label>
+    <div class="row">
+      <div><label>口頭の重み（％）</label><input type="number" id="w_oral" min="0" max="100" value="50"></div>
+      <div><label>筆記の重み（％）</label><input type="number" id="w_written" min="0" max="100" value="50"></div>
+    </div>
+
+    <label style="margin-top:16px">必須（最低限）落ちの扱い</label>
+    <label class="chk"><input type="checkbox" id="req_force_red" checked> 必須項目を落としたら、スコアに関係なく赤信号にする（推奨）</label>
+
+    <div class="btnrow">
+      <button class="act" onclick="saveSetting()">設定を保存</button>
+      <button class="ghost" onclick="resetSetting()">初期値に戻す</button>
+    </div>
+    <div class="small" id="settingStatus" style="margin-top:8px"></div>
+  </div>
+
+  <!-- データ -->
+  <div class="panel" id="p-data">
+    <h2 class="sec">💾 データ保管</h2>
+    <div class="howto"><b>使い方：</b> 全メンバー・全設定をJSONで保存／復元できます。CSVで一覧を書き出すこともできます。保存先はあなたの端末だけです（外部送信なし）。データはブラウザにも自動保存されます。</div>
+    <div class="btnrow" style="margin-top:0">
+      <button class="act" onclick="exportJSON()">JSONで保存</button>
+      <button class="ghost" onclick="document.getElementById('importFile').click()">JSONを読み込む</button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importJSON(event)">
+      <button class="ghost" onclick="exportCSV()">CSVで一覧出力</button>
+      <button class="danger" onclick="clearAll()">全データ削除</button>
+    </div>
+    <label style="margin-top:14px">出力プレビュー</label>
+    <textarea class="out" id="dataOut" readonly></textarea>
+    <div class="small" id="dataStatus" style="margin-top:6px"></div>
+  </div>
+
+  <div class="foot">
+    🐰 うさうさエンジニア研究室 ・ <span class="motto">面白きこともなき世を面白く</span><br>
+    APIなし版：登録不要・インストール不要・完全オフライン。入力内容は端末内のみで処理されます。
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ===== state ===== */
+var LS_KEY="usausa_mentor_eval_v1";
+var state={ members:[], activeId:null, setting:defaultSetting() };
+
+function defaultSetting(){
+  return { th_green:75, th_red:50, th_lv5:80, th_lv3:55, w_oral:50, w_written:50, req_force_red:true };
+}
+function uid(){ return "m"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function nowParts(){
+  var d=new Date(), wd=["日","月","火","水","木","金","土"][d.getDay()];
+  var y=d.getFullYear(),mo=("0"+(d.getMonth()+1)).slice(-2),da=("0"+d.getDate()).slice(-2);
+  var hh=("0"+d.getHours()).slice(-2),mi=("0"+d.getMinutes()).slice(-2);
+  return {date:y+"/"+mo+"/"+da+"（"+wd+"）",datetime:y+"/"+mo+"/"+da+"（"+wd+"） "+hh+":"+mi,stamp:y+mo+da};
+}
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function toast(m){ var t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(function(){t.classList.remove("show");},1600); }
+function clamp(n,lo,hi){ n=Number(n); if(isNaN(n))n=0; return Math.max(lo,Math.min(hi,n)); }
+
+/* ===== member factory ===== */
+function newMember(name){
+  return { id:uid(), name:name||"無名", created:nowParts().datetime,
+    oral:[], written:[], memo:"", result:null };
+}
+function activeMember(){ return state.members.find(function(m){return m.id===state.activeId;})||null; }
+
+/* ===== persistence (localStorage) ===== */
+function saveLS(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ /* storage無効環境でも動作継続 */ }
+}
+function loadLS(){
+  try{
+    var raw=localStorage.getItem(LS_KEY);
+    if(!raw) return false;
+    var d=JSON.parse(raw);
+    if(d && Array.isArray(d.members)){
+      state.members=d.members;
+      state.activeId=d.activeId|| (d.members[0]&&d.members[0].id) ||null;
+      state.setting=Object.assign(defaultSetting(), d.setting||{});
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+/* ===== members UI ===== */
+function addMember(){
+  var nm=(document.getElementById("newMemberName").value||"").trim();
+  if(!nm){ toast("メンバー名を入力してください"); return; }
+  var m=newMember(nm);
+  state.members.push(m); state.activeId=m.id;
+  document.getElementById("newMemberName").value="";
+  saveLS(); renderMembers(); renderActiveAll(); renderDash();
+  toast("メンバーを追加しました");
+}
+function selectMember(id){ state.activeId=id; saveLS(); renderMembers(); renderActiveAll(); }
+function removeMember(id,ev){
+  if(ev) ev.stopPropagation();
+  var m=state.members.find(function(x){return x.id===id;});
+  if(!m) return;
+  if(!confirm("「"+m.name+"」を削除します。よろしいですか？")) return;
+  state.members=state.members.filter(function(x){return x.id!==id;});
+  if(state.activeId===id) state.activeId=state.members[0]?state.members[0].id:null;
+  saveLS(); renderMembers(); renderActiveAll(); renderDash();
+  toast("削除しました");
+}
+function renderMembers(){
+  var bar=document.getElementById("memberbar");
+  bar.innerHTML="";
+  if(!state.members.length){
+    bar.innerHTML='<span class="small">メンバーがいません。ダッシュボードtabから追加してください。</span>';
+    return;
+  }
+  state.members.forEach(function(m){
+    var sig=m.result?m.result.signal:"none";
+    var dot=sig==="green"?'<span class="sig green"></span>':sig==="yellow"?'<span class="sig yellow"></span>':sig==="red"?'<span class="sig red"></span>':"";
+    var chip=document.createElement("div");
+    chip.className="mchip"+(m.id===state.activeId?" active":"");
+    chip.innerHTML=dot+'<span>'+esc(m.name)+'</span><span class="x" title="削除">✕</span>';
+    chip.onclick=function(){ selectMember(m.id); };
+    chip.querySelector(".x").onclick=function(ev){ removeMember(m.id,ev); };
+    bar.appendChild(chip);
+  });
+}
+
+/* ===== 口頭 ===== */
+function addOral(q,lv,sig,req,obs,note){
+  var m=activeMember(); if(!m){ toast("先にメンバーを追加してください"); return; }
+  m.oral.push({ q:q||"", lv:lv||1, sig:sig||"green", req:!!req, obs:obs||"", note:note||"" });
+  saveLS(); renderOral();
+}
+function addOralPreset(){
+  var m=activeMember(); if(!m){ toast("先にメンバーを追加してください"); return; }
+  addOral("用語の意味を説明できる",1,"green",true);
+  addOral("業務の文脈で説明できる",3,"green",true);
+  addOral("トラブルを切り分け・対処できる",5,"green",false);
+  toast("標準セットを追加しました");
+}
+function renderOral(){
+  var m=activeMember(), box=document.getElementById("oralList");
+  if(!m){ box.innerHTML='<div class="empty">メンバーを選択してください。</div>'; return; }
+  if(!m.oral.length){ box.innerHTML='<div class="empty">設問がありません。「＋ 設問を追加」または「標準セット」を押してください。</div>'; return; }
+  box.innerHTML="";
+  m.oral.forEach(function(it,i){
+    var c=document.createElement("div"); c.className="card";
+    c.innerHTML=
+      '<div class="chead"><span class="qn">設問 '+(i+1)+'</span>'+
+        '<span><button class="ghost mini" onclick="delOral('+i+')">削除</button></span></div>'+
+      '<label>設問内容</label><input type="text" value="'+esc(it.q)+'" oninput="upOral('+i+',\'q\',this.value)" placeholder="例）パイプの仕組みを説明できる">'+
+      '<div class="row" style="margin-top:8px">'+
+        '<div><label>レベル</label><select onchange="upOral('+i+',\'lv\',this.value)">'+
+          '<option value="1"'+(it.lv==1?" selected":"")+'>Lv.1 記憶</option>'+
+          '<option value="3"'+(it.lv==3?" selected":"")+'>Lv.3 説明</option>'+
+          '<option value="5"'+(it.lv==5?" selected":"")+'>Lv.5 応用</option>'+
+        '</select></div>'+
+        '<div><label>信号</label><div class="sigpick">'+
+          '<button class="'+(it.sig==="green"?"on green":"")+'" onclick="upOral('+i+',\'sig\',\'green\')">🟢青</button>'+
+          '<button class="'+(it.sig==="yellow"?"on yellow":"")+'" onclick="upOral('+i+',\'sig\',\'yellow\')">🟡黄</button>'+
+          '<button class="'+(it.sig==="red"?"on red":"")+'" onclick="upOral('+i+',\'sig\',\'red\')">🔴赤</button>'+
+        '</div></div>'+
+        '<div><label>最低限</label><label class="chk"><input type="checkbox" '+(it.req?"checked":"")+' onchange="upOral('+i+',\'req\',this.checked)"> 必須（落ちたら赤）</label></div>'+
+      '</div>'+
+      '<label>観測した事実</label><input type="text" value="'+esc(it.obs)+'" oninput="upOral('+i+',\'obs\',this.value)" placeholder="例）コマンドの目的を即答できた">'+
+      '<label>所感（任意）</label><input type="text" value="'+esc(it.note)+'" oninput="upOral('+i+',\'note\',this.value)" placeholder="例）自信がついてきた様子">';
+    box.appendChild(c);
+  });
+}
+function upOral(i,k,v){ var m=activeMember(); if(!m)return; if(k==="lv")v=Number(v); m.oral[i][k]=v; saveLS(); }
+function delOral(i){ var m=activeMember(); if(!m)return; m.oral.splice(i,1); saveLS(); renderOral(); }
+
+/* ===== 筆記 ===== */
+function addWritten(q,max,score,req){
+  var m=activeMember(); if(!m){ toast("先にメンバーを追加してください"); return; }
+  m.written.push({ q:q||"", max:(max==null?10:max), score:(score==null?0:score), req:!!req });
+  saveLS(); renderWritten();
+}
+function addWrittenPreset(){
+  var m=activeMember(); if(!m){ toast("先にメンバーを追加してください"); return; }
+  for(var i=1;i<=5;i++) addWritten("設問"+i,20,0,i<=2);
+  toast("5問テンプレを追加しました（各20点・問1,2を必須）");
+}
+function renderWritten(){
+  var m=activeMember(), box=document.getElementById("writtenList");
+  if(!m){ box.innerHTML='<div class="empty">メンバーを選択してください。</div>'; renderWrittenScore(); return; }
+  if(!m.written.length){ box.innerHTML='<div class="empty">設問がありません。「＋ 設問を追加」または「5問テンプレ」を押してください。</div>'; renderWrittenScore(); return; }
+  var html='<table><thead><tr><th>#</th><th>設問</th><th style="width:90px">配点</th><th style="width:90px">得点</th><th style="width:80px">最低限</th><th style="width:60px"></th></tr></thead><tbody>';
+  m.written.forEach(function(it,i){
+    html+='<tr>'+
+      '<td>'+(i+1)+'</td>'+
+      '<td><input type="text" value="'+esc(it.q)+'" oninput="upWritten('+i+',\'q\',this.value)"></td>'+
+      '<td><input type="number" min="0" value="'+it.max+'" oninput="upWritten('+i+',\'max\',this.value)"></td>'+
+      '<td><input type="number" min="0" value="'+it.score+'" oninput="upWritten('+i+',\'score\',this.value)"></td>'+
+      '<td><label class="chk"><input type="checkbox" '+(it.req?"checked":"")+' onchange="upWritten('+i+',\'req\',this.checked)"> 必須</label></td>'+
+      '<td><button class="ghost mini" onclick="delWritten('+i+')">削除</button></td>'+
+    '</tr>';
+  });
+  html+='</tbody></table>';
+  box.innerHTML=html;
+  renderWrittenScore();
+}
+function upWritten(i,k,v){
+  var m=activeMember(); if(!m)return;
+  if(k==="max"||k==="score") v=clamp(v,0,100000);
+  m.written[i][k]=v; saveLS();
+  if(k==="max"||k==="score") renderWrittenScore();
+}
+function delWritten(i){ var m=activeMember(); if(!m)return; m.written.splice(i,1); saveLS(); renderWritten(); }
+function writtenTotals(m){
+  var max=0,score=0;
+  (m.written||[]).forEach(function(it){ max+=Number(it.max)||0; score+=Math.min(Number(it.score)||0, Number(it.max)||0); });
+  var pct = max>0 ? Math.round(score/max*100) : 0;
+  return {max:max,score:score,pct:pct};
+}
+function renderWrittenScore(){
+  var m=activeMember(), box=document.getElementById("writtenScore");
+  if(!m){ box.innerHTML=""; return; }
+  var t=writtenTotals(m);
+  box.innerHTML=
+    '<div class="scorecell"><div class="lab">合計得点</div><div class="val">'+t.score+' / '+t.max+'</div></div>'+
+    '<div class="scorecell"><div class="lab">得点率</div><div class="val">'+t.pct+'%</div></div>';
+}
+
+/* ===== 口頭スコア化 ===== */
+/* 信号を点数化: green=100, yellow=60, red=0。レベルで重み付け（Lv5を重く） */
+function oralScore(m){
+  var arr=m.oral||[];
+  if(!arr.length) return {pct:0, count:0};
+  var sigVal={green:100,yellow:60,red:0};
+  var lvW={1:1,3:1.5,5:2};
+  var num=0,den=0;
+  arr.forEach(function(it){
+    var w=lvW[it.lv]||1;
+    num += (sigVal[it.sig]!=null?sigVal[it.sig]:0)*w;
+    den += 100*w;
+  });
+  var pct = den>0 ? Math.round(num/den*100) : 0;
+  return {pct:pct, count:arr.length};
+}
+/* 必須落ち判定: 口頭で必須かつ赤、または筆記で必須かつ得点0 */
+function hasReqFail(m){
+  var oralFail=(m.oral||[]).some(function(it){ return it.req && it.sig==="red"; });
+  var writFail=(m.written||[]).some(function(it){ return it.req && (Number(it.score)||0)<=0 && (Number(it.max)||0)>0; });
+  return oralFail||writFail;
+}
+
+/* ===== 総合判定 ===== */
+function computeResult(m){
+  var s=state.setting;
+  var wO=clamp(s.w_oral,0,100), wW=clamp(s.w_written,0,100);
+  var wsum=wO+wW; if(wsum===0){ wO=50;wW=50;wsum=100; }
+  var o=oralScore(m).pct, w=writtenTotals(m).pct;
+  var total=Math.round((o*wO + w*wW)/wsum);
+  // レベル
+  var level = total>=clamp(s.th_lv5,0,100) ? 5 : total>=clamp(s.th_lv3,0,100) ? 3 : 1;
+  // 信号
+  var reqFail = s.req_force_red && hasReqFail(m);
+  var signal;
+  if(reqFail){ signal="red"; }
+  else if(total>=clamp(s.th_green,0,100)){ signal="green"; }
+  else if(total<clamp(s.th_red,0,100)){ signal="red"; }
+  else { signal="yellow"; }
+  return { oral:o, written:w, total:total, level:level, signal:signal, reqFail:reqFail, at:nowParts().datetime };
+}
+function calcResult(){
+  var m=activeMember(); if(!m){ toast("メンバーを選択してください"); return; }
+  m.result=computeResult(m);
+  saveLS(); renderResult(); renderMembers(); renderDash();
+  toast("総合を判定しました");
+}
+var SIGTXT={green:"🟢 青信号（合格圏）",yellow:"🟡 黄信号（あと一歩）",red:"🔴 赤信号（要フォロー）"};
+var LVTXT={1:"Lv.1 記憶",3:"Lv.3 説明",5:"Lv.5 応用"};
+function renderResult(){
+  var m=activeMember(), sb=document.getElementById("resultScore"), vb=document.getElementById("verdictBox");
+  if(!m){ sb.innerHTML=""; vb.innerHTML='<div class="empty">メンバーを選択してください。</div>'; document.getElementById("mentorMemo").value=""; return; }
+  document.getElementById("mentorMemo").value=m.memo||"";
+  var r=m.result;
+  if(!r){ sb.innerHTML=""; vb.innerHTML='<div class="empty">「総合を判定する」を押してください。</div>'; return; }
+  sb.innerHTML=
+    '<div class="scorecell"><div class="lab">口頭</div><div class="val">'+r.oral+'%</div></div>'+
+    '<div class="scorecell"><div class="lab">筆記</div><div class="val">'+r.written+'%</div></div>'+
+    '<div class="scorecell"><div class="lab">総合スコア</div><div class="val">'+r.total+'%</div></div>'+
+    '<div class="scorecell"><div class="lab">レベル</div><div class="val"><span class="lvtag lv'+r.level+'">'+LVTXT[r.level]+'</span></div></div>';
+  var msg = r.signal==="green" ? "合格圏です。次のレベルの課題に進めましょう。"
+          : r.signal==="yellow" ? "あと一歩。弱い領域を絞ってフォローしましょう。"
+          : (r.reqFail ? "最低限の必須項目が抜けています。スコアに関わらず赤信号です。まずそこを固めましょう。"
+                       : "スコアがしきい値を下回っています。基礎から重点的にフォローを。");
+  vb.innerHTML='<div class="verdict '+r.signal+'"><div class="vt">'+SIGTXT[r.signal]+'</div><div>'+esc(msg)+'</div><div class="small" style="margin-top:6px">判定: '+esc(r.at)+'</div></div>';
+}
+function saveMemo(){ var m=activeMember(); if(!m){toast("メンバーを選択してください");return;} m.memo=document.getElementById("mentorMemo").value; saveLS(); toast("所感を保存しました"); }
+function copyReport(){
+  var m=activeMember(); if(!m){toast("メンバーを選択してください");return;}
+  if(!m.result){ toast("先に総合を判定してください"); return; }
+  var r=m.result, ot=writtenTotals(m);
+  var L=[];
+  L.push("=== 評価レポート："+m.name+" ===");
+  L.push("評価日時: "+r.at);
+  L.push("");
+  L.push("[総合] "+SIGTXT[r.signal].replace(/^.. /,"")+" / "+LVTXT[r.level]+" / 総合スコア "+r.total+"%");
+  L.push("  口頭: "+r.oral+"% ／ 筆記: "+r.written+"%（"+ot.score+"/"+ot.max+"）");
+  if(r.reqFail) L.push("  ※ 必須（最低限）項目の未達あり → 赤信号");
+  L.push("");
+  L.push("[口頭理解度チェック]");
+  (m.oral||[]).forEach(function(it,i){
+    var sg=it.sig==="green"?"青":it.sig==="yellow"?"黄":"赤";
+    L.push("  "+(i+1)+". ["+sg+"] Lv."+it.lv+(it.req?"（必須）":"")+" "+it.q);
+    if(it.obs) L.push("     事実: "+it.obs);
+    if(it.note) L.push("     所感: "+it.note);
+  });
+  if(!(m.oral||[]).length) L.push("  （記録なし）");
+  L.push("");
+  L.push("[筆記試験]");
+  (m.written||[]).forEach(function(it,i){
+    L.push("  "+(i+1)+". "+it.q+(it.req?"（必須）":"")+" : "+(Number(it.score)||0)+"/"+(Number(it.max)||0));
+  });
+  if(!(m.written||[]).length) L.push("  （記録なし）");
+  L.push("");
+  L.push("[メンター所感]");
+  L.push("  "+(m.memo||"（未記入）"));
+  var txt=L.join("\n");
+  copyText(txt);
+}
+function copyText(txt){
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){toast("コピーしました");},function(){fallbackCopy(txt);}); }
+    else fallbackCopy(txt);
+  }catch(e){ fallbackCopy(txt); }
+}
+function fallbackCopy(txt){
+  var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); toast("コピーしました"); }catch(e){ toast("コピー失敗"); }
+  document.body.removeChild(ta);
+}
+
+/* ===== 設定 ===== */
+function loadSettingToForm(){
+  var s=state.setting;
+  document.getElementById("th_green").value=s.th_green;
+  document.getElementById("th_red").value=s.th_red;
+  document.getElementById("th_lv5").value=s.th_lv5;
+  document.getElementById("th_lv3").value=s.th_lv3;
+  document.getElementById("w_oral").value=s.w_oral;
+  document.getElementById("w_written").value=s.w_written;
+  document.getElementById("req_force_red").checked=!!s.req_force_red;
+}
+function saveSetting(){
+  var s=state.setting;
+  s.th_green=clamp(document.getElementById("th_green").value,0,100);
+  s.th_red=clamp(document.getElementById("th_red").value,0,100);
+  s.th_lv5=clamp(document.getElementById("th_lv5").value,0,100);
+  s.th_lv3=clamp(document.getElementById("th_lv3").value,0,100);
+  s.w_oral=clamp(document.getElementById("w_oral").value,0,100);
+  s.w_written=clamp(document.getElementById("w_written").value,0,100);
+  s.req_force_red=document.getElementById("req_force_red").checked;
+  // 整合性の軽い補正
+  if(s.th_red>s.th_green){ var t=s.th_red; s.th_red=s.th_green; s.th_green=t; }
+  if(s.th_lv3>s.th_lv5){ var u=s.th_lv3; s.th_lv3=s.th_lv5; s.th_lv5=u; }
+  loadSettingToForm();
+  saveLS();
+  document.getElementById("settingStatus").textContent="保存しました（"+nowParts().datetime+"）。赤<黄<青 / Lv.3<Lv.5 になるよう自動補正しています。";
+  recalcAll();
+  toast("設定を保存しました");
+}
+function resetSetting(){ state.setting=defaultSetting(); loadSettingToForm(); saveLS(); document.getElementById("settingStatus").textContent="初期値に戻しました。"; recalcAll(); toast("初期値に戻しました"); }
+
+/* ===== ダッシュボード ===== */
+function renderDash(){
+  var box=document.getElementById("dashTable");
+  if(!state.members.length){ box.innerHTML='<div class="empty">メンバーがいません。上の入力欄から追加してください。</div>'; return; }
+  var rows=state.members.map(function(m){
+    var r=m.result||computeResult(m);
+    return {m:m,r:r};
+  });
+  var order={red:0,yellow:1,green:2};
+  rows.sort(function(a,b){ return (order[a.r.signal]-order[b.r.signal]) || (a.r.total-b.r.total); });
+  var html='<table><thead><tr><th>信号</th><th>メンバー</th><th>総合</th><th>口頭</th><th>筆記</th><th>レベル</th><th>必須</th><th>判定日時</th></tr></thead><tbody>';
+  rows.forEach(function(o){
+    var r=o.r;
+    var bcls=r.signal, btxt=r.signal==="green"?"青":r.signal==="yellow"?"黄":"赤";
+    html+='<tr style="cursor:pointer" onclick="selectMember(\''+o.m.id+'\');switchTab(\'result\')">'+
+      '<td><span class="sig '+bcls+'"></span><span class="badge '+bcls+'">'+btxt+'</span></td>'+
+      '<td>'+esc(o.m.name)+'</td>'+
+      '<td><b>'+r.total+'%</b></td>'+
+      '<td>'+r.oral+'%</td>'+
+      '<td>'+r.written+'%</td>'+
+      '<td><span class="lvtag lv'+r.level+'">'+LVTXT[r.level]+'</span></td>'+
+      '<td>'+(r.reqFail?'<span class="badge red">未達</span>':'<span class="small">OK</span>')+'</td>'+
+      '<td class="small">'+(o.m.result?esc(r.at):'<span class="small">未判定</span>')+'</td>'+
+    '</tr>';
+  });
+  html+='</tbody></table>';
+  box.innerHTML=html;
+}
+function recalcAll(){
+  state.members.forEach(function(m){ if(m.result) m.result=computeResult(m); });
+  saveLS(); renderMembers(); renderDash(); if(activeMember()) renderResult();
+}
+
+/* ===== tabs ===== */
+var TABS=["dash","oral","written","result","setting","data"];
+function switchTab(tab){
+  document.querySelectorAll(".tab").forEach(function(t){ t.classList.toggle("active", t.getAttribute("data-tab")===tab); });
+  TABS.forEach(function(t){ var pe=document.getElementById("p-"+t); if(pe) pe.classList.toggle("active", t===tab); });
+  if(tab==="dash") renderDash();
+  if(tab==="oral") renderOral();
+  if(tab==="written") renderWritten();
+  if(tab==="result") renderResult();
+}
+document.querySelectorAll(".tab").forEach(function(t){ t.addEventListener("click",function(){ switchTab(t.getAttribute("data-tab")); }); });
+
+/* ===== active render ===== */
+function renderActiveAll(){ renderOral(); renderWritten(); renderResult(); }
+
+/* ===== data export/import ===== */
+function exportData(){
+  return { _tool:"usausa_mentor_eval", _ver:"1.0", _saved:nowParts().datetime,
+    setting:state.setting, members:state.members, activeId:state.activeId };
+}
+function saveBlob(text,filename,type){
+  try{
+    var blob=new Blob([text],{type:(type||"text/plain")+";charset=utf-8"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a"); a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); },100);
+  }catch(e){ toast("保存に失敗しました"); }
+}
+function exportJSON(){
+  var json=JSON.stringify(exportData(),null,2);
+  document.getElementById("dataOut").value=json;
+  saveBlob(json,"mentor_eval_"+nowParts().stamp+".json","application/json");
+  document.getElementById("dataStatus").textContent="JSONを保存しました（"+nowParts().datetime+"）";
+  toast("JSONを保存しました");
+}
+function importJSON(ev){
+  var f=ev.target.files&&ev.target.files[0]; if(!f) return;
+  var rd=new FileReader();
+  rd.onload=function(e){
+    try{
+      var d=JSON.parse(e.target.result);
+      if(!d||!Array.isArray(d.members)) throw new Error("形式が不正です");
+      state.members=d.members;
+      state.setting=Object.assign(defaultSetting(), d.setting||{});
+      state.activeId=d.activeId||(d.members[0]&&d.members[0].id)||null;
+      saveLS(); loadSettingToForm(); renderMembers(); renderActiveAll(); renderDash();
+      document.getElementById("dataStatus").textContent="読み込みました（保存日時: "+(d._saved||"不明")+"）";
+      toast("読み込みました");
+    }catch(err){
+      document.getElementById("dataStatus").textContent="読み込み失敗: "+err.message;
+      toast("JSONの形式が不正です");
+    }
+    ev.target.value="";
+  };
+  rd.onerror=function(){ toast("ファイルを読めませんでした"); };
+  rd.readAsText(f);
+}
+function csvCell(s){ s=String(s==null?"":s); if(/[",\n]/.test(s)) s='"'+s.replace(/"/g,'""')+'"'; return s; }
+function exportCSV(){
+  if(!state.members.length){ toast("メンバーがいません"); return; }
+  var head=["メンバー","総合スコア","口頭%","筆記%","レベル","信号","必須未達","判定日時","所感"];
+  var lines=[head.map(csvCell).join(",")];
+  state.members.forEach(function(m){
+    var r=m.result||computeResult(m);
+    var sg=r.signal==="green"?"青":r.signal==="yellow"?"黄":"赤";
+    lines.push([m.name,r.total,r.oral,r.written,LVTXT[r.level],sg,(r.reqFail?"未達":"OK"),(m.result?r.at:"未判定"),(m.memo||"")].map(csvCell).join(","));
+  });
+  var csv="\ufeff"+lines.join("\r\n"); // BOM付きでExcel文字化け回避
+  document.getElementById("dataOut").value=csv;
+  saveBlob(csv,"mentor_eval_"+nowParts().stamp+".csv","text/csv");
+  document.getElementById("dataStatus").textContent="CSVを保存しました（"+nowParts().datetime+"）";
+  toast("CSVを保存しました");
+}
+function clearAll(){
+  if(!confirm("全メンバー・全設定を削除します。元に戻せません。よろしいですか？")) return;
+  state.members=[]; state.activeId=null; state.setting=defaultSetting();
+  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+  loadSettingToForm(); renderMembers(); renderActiveAll(); renderDash();
+  document.getElementById("dataStatus").textContent="全データを削除しました。";
+  toast("全データを削除しました");
+}
+
+/* ===== init ===== */
+(function init(){
+  document.getElementById("ver_today").textContent=nowParts().date+" 版";
+  loadLS();
+  loadSettingToForm();
+  renderMembers(); renderActiveAll(); renderDash();
+})();
+</script>
+</body>
+</html>
